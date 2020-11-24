@@ -48,12 +48,19 @@ class HapConan(ConanFile):
             self.run('cp -a build/Release/HapInAVFoundation.framework ../%s' % self.install_arm_dir)
 
         self.run('cp -a %s %s' % (self.install_x86_dir, self.install_universal_dir))
+
         self.run('lipo -create %s/HapInAVFoundation.framework/Versions/A/HapInAVFoundation %s/HapInAVFoundation.framework/Versions/A/HapInAVFoundation -output %s/HapInAVFoundation.framework/Versions/A/HapInAVFoundation' % (self.install_x86_dir, self.install_arm_dir, self.install_universal_dir))
         self.run('lipo -create %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsnappy.dylib %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsnappy.dylib -output %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsnappy.dylib' % (self.install_x86_dir, self.install_arm_dir, self.install_universal_dir))
         self.run('lipo -create %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsquish.dylib %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsquish.dylib -output %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsquish.dylib' % (self.install_x86_dir, self.install_arm_dir, self.install_universal_dir))
+
         self.run('codesign --sign - %s/HapInAVFoundation.framework/Versions/A/HapInAVFoundation'          % self.install_universal_dir)
         self.run('codesign --sign - %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsnappy.dylib' % self.install_universal_dir)
         self.run('codesign --sign - %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsquish.dylib' % self.install_universal_dir)
+
+        # HapInAVFoundation.framework is missing the root Frameworks symlink.
+        # Since it references its inner dylibs paths relative to the root of the framework,
+        # add the symlink so it can find them.
+        self.run('ln -s Versions/Current/Frameworks %s/HapInAVFoundation.framework' % self.install_universal_dir)
 
     def package(self):
         self.copy('*', src='%s/HapInAVFoundation.framework' % self.install_universal_dir, dst='lib/HapInAVFoundation.framework', symlinks=True)
