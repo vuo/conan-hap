@@ -5,7 +5,7 @@ class HapConan(ConanFile):
     name = 'hap'
 
     source_version = '1.5.3'
-    package_version = '0'
+    package_version = '1'
     version = '%s-%s' % (source_version, package_version)
 
     build_requires = (
@@ -51,6 +51,9 @@ class HapConan(ConanFile):
         self.run('lipo -create %s/HapInAVFoundation.framework/Versions/A/HapInAVFoundation %s/HapInAVFoundation.framework/Versions/A/HapInAVFoundation -output %s/HapInAVFoundation.framework/Versions/A/HapInAVFoundation' % (self.install_x86_dir, self.install_arm_dir, self.install_universal_dir))
         self.run('lipo -create %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsnappy.dylib %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsnappy.dylib -output %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsnappy.dylib' % (self.install_x86_dir, self.install_arm_dir, self.install_universal_dir))
         self.run('lipo -create %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsquish.dylib %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsquish.dylib -output %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsquish.dylib' % (self.install_x86_dir, self.install_arm_dir, self.install_universal_dir))
+        self.run('codesign --sign - %s/HapInAVFoundation.framework/Versions/A/HapInAVFoundation'          % self.install_universal_dir)
+        self.run('codesign --sign - %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsnappy.dylib' % self.install_universal_dir)
+        self.run('codesign --sign - %s/HapInAVFoundation.framework/Versions/A/Frameworks/libsquish.dylib' % self.install_universal_dir)
 
     def package(self):
         self.copy('*', src='%s/HapInAVFoundation.framework' % self.install_universal_dir, dst='lib/HapInAVFoundation.framework', symlinks=True)
